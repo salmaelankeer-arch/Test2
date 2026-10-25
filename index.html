@@ -1,0 +1,1224 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نادي الفيزياء | PHYSICS CLUB</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Reports -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        petroleum: {
+                            DEFAULT: '#075663',
+                            dark: '#043841',
+                            light: '#0c7385',
+                            subtle: '#e6f2f4'
+                        },
+                        orange: {
+                            DEFAULT: '#F47721',
+                            dark: '#d65f0e',
+                            light: '#ff9042',
+                            subtle: '#fef1e8'
+                        },
+                        offwhite: '#FFFDF7'
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FFFDF7;
+            color: #1f2937;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .physics-glow {
+            box-shadow: 0 0 15px rgba(244, 119, 33, 0.25);
+        }
+        .petroleum-glow {
+            box-shadow: 0 0 15px rgba(7, 86, 99, 0.2);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FFFDF7;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #075663;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #F47721;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(7, 86, 99, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- Header / Navigation Bar -->
+    <header class="bg-petroleum text-white sticky top-0 z-40 shadow-lg border-b-2 border-orange">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Interactive Logo & Brand -->
+            <div onclick="openLoginModal()" class="flex items-center gap-3 cursor-pointer group select-none">
+                <div class="w-12 h-12 rounded-xl bg-orange flex items-center justify-center text-white text-2xl font-bold shadow-md transition-transform transform group-hover:scale-105 group-hover:rotate-6">
+                    <i class="fa-solid fa-atom animate-spin-slow"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide group-hover:text-orange-light transition-colors">نادي الفيزياء</h1>
+                    <p class="text-xs text-orange tracking-wider font-semibold">PHYSICS CLUB</p>
+                </div>
+            </div>
+
+            <!-- Global Status & Quick User Actions -->
+            <div id="header-user-status" class="flex items-center gap-4">
+                <button onclick="openLoginModal()" class="px-5 py-2.5 rounded-lg bg-orange hover:bg-orange-dark text-white font-semibold text-sm transition-all shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>تسجيل الدخول</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main id="app-container" class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Content will be dynamically rendered here -->
+    </main>
+
+    <!-- Dynamic Modal System -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/60 z-50 hidden backdrop-blur-sm flex items-center justify-center p-4">
+        <div id="modal-content" class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-petroleum/20 transform transition-all scale-95 opacity-0">
+            <!-- Modal Header -->
+            <div class="bg-petroleum text-white p-6 flex justify-between items-center relative">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-user-shield text-orange text-2xl"></i>
+                    <h3 class="text-xl font-bold" id="modal-title">تسجيل الدخول إلى حسابك</h3>
+                </div>
+                <button onclick="closeModal()" class="text-white/80 hover:text-orange text-xl transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Role Selection Tabs -->
+            <div class="p-6">
+                <div class="flex bg-petroleum-subtle p-1 rounded-xl mb-6">
+                    <button id="role-btn-student" onclick="switchLoginRole('student')" class="flex-1 py-2.5 rounded-lg text-sm font-bold transition-all text-white bg-petroleum shadow">
+                        <i class="fa-solid fa-user-graduate ml-2"></i>طالب
+                    </button>
+                    <button id="role-btn-teacher" onclick="switchLoginRole('teacher')" class="flex-1 py-2.5 rounded-lg text-sm font-bold transition-all text-gray-600 hover:text-petroleum">
+                        <i class="fa-solid fa-chalkboard-user ml-2"></i>مدرس
+                    </button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                    <input type="hidden" id="login-role" value="student">
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-petroleum mb-1" id="username-label">اسم المستخدم أو كود الطالب</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                            <input type="text" id="login-username" required class="w-full pr-10 pl-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-petroleum focus:border-petroleum outline-none text-sm transition-all" placeholder="أدخل اسم المستخدم">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-petroleum mb-1">كلمة المرور</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                <i class="fa-solid fa-lock"></i>
+                            </span>
+                            <input type="password" id="login-password" required class="w-full pr-10 pl-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-petroleum focus:border-petroleum outline-none text-sm transition-all" placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <div id="login-error" class="hidden text-xs text-red-600 bg-red-50 p-3 rounded-lg border border-red-200 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span id="login-error-text">بيانات الدخول غير صحيحة.</span>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 bg-orange hover:bg-orange-dark text-white font-bold rounded-lg transition-all shadow-md flex items-center justify-center gap-2">
+                        <span>الدخول للمنصة</span>
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                </form>
+
+                <div class="mt-4 pt-4 border-t text-center text-xs text-gray-500">
+                    <p>الحسابات التجريبية للمعاينة:</p>
+                    <div class="mt-1 flex justify-center gap-4 font-mono text-petroleum">
+                        <span>مدرس: tch.amr / 123456</span>
+                        <span>|</span>
+                        <span>طالب: std.ahmed / 123456</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parent Report View Modal -->
+    <div id="parent-report-modal" class="fixed inset-0 bg-black/60 z-50 hidden backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-petroleum/20 p-6">
+            <div class="flex justify-between items-center border-b pb-4 mb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-petroleum">تقرير ولي الأمر المعتمد | Physics Club</h2>
+                    <p class="text-xs text-gray-500">منصة نادي الفيزياء - متابعة التطور والأداء</p>
+                </div>
+                <button onclick="closeParentReport()" class="text-gray-400 hover:text-orange text-2xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="parent-report-content"></div>
+        </div>
+    </div>
+
+    <!-- Remedial Path Modal -->
+    <div id="remedial-modal" class="fixed inset-0 bg-black/70 z-50 hidden backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-orange p-6">
+            <div id="remedial-content"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-petroleum text-white text-xs py-6 border-t-4 border-orange">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-atom text-orange text-lg"></i>
+                <span class="font-bold">نادي الفيزياء | PHYSICS CLUB</span>
+                <span class="text-gray-400">© 2026 - جميع الحقوق محفوظة</span>
+            </div>
+            <div class="flex gap-4 text-gray-300">
+                <span class="hover:text-orange cursor-pointer">الشروط والأحكام</span>
+                <span>•</span>
+                <span class="hover:text-orange cursor-pointer">سياسة الخصوصية</span>
+                <span>•</span>
+                <span class="hover:text-orange cursor-pointer">الدعم الفني والتعليمي</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MAIN JAVASCRIPT LOGIC -->
+    <script>
+        /**
+         * INITIALIZATION & LOCAL STORAGE STATE MANAGEMENT
+         */
+        const DB_KEY = 'PHYSICS_CLUB_STATE_V1';
+
+        // Default Seed Data
+        const initialDB = {
+            currentUser: null,
+            users: [
+                { id: 'u1', username: 'tch.amr', name: 'أ. عمرو سمير', role: 'teacher', pass: '123456' },
+                { id: 'u2', username: 'std.ahmed', name: 'أحمد محمود العبد', role: 'student', group: 'الصف الثالث الثانوي - مجموعة أ', pass: '123456' }
+            ],
+            skills: [
+                { id: 'sk1', name: 'فهم المفاهيم الفيزيائية', desc: 'التمييز بين الكميات كالجهد والتشارچ' },
+                { id: 'sk2', name: 'اختيار القانون المناسب', desc: 'تحديد المعطيات والمطلوب بدقة' },
+                { id: 'sk3', name: 'التعويض الرياضي والوحدات', desc: 'إجراء الحسابات الدقيقة والتحويلات' },
+                { id: 'sk4', name: 'تفسير الرسم البياني والظواهر', desc: 'استخراج الأنماط والعلاقات الفيزيائية' }
+            ],
+            questionBank: [
+                {
+                    id: 'q1',
+                    text: 'إذا زاد طول موصل معدني منتظم المقطع إلى ضعف قيمته مع ثبوت درجة الحرارة، فإن مقاومته النوعية:',
+                    options: ['تزداد للضعف', 'تقل للنصف', 'تظل ثابته كما هي', 'تزداد لأربعة أمثال'],
+                    correctIndex: 2,
+                    skillId: 'sk1',
+                    correctExplanation: 'المقاومة النوعية صفة مميزة للمادة وتعتمد فقط على نوع المادة ودرجة الحرارة، ولا تتأثر بال أبعاد الهندسية.',
+                    optionExplanations: [
+                        'خطأ: طول الموصل يغير المقاومة الكهربية R وليس المقاومة النوعية.',
+                        'خطأ: المقاومة النوعية لا تقل بزيادة الطول.',
+                        'صحيح: المقاومة النوعية تظل ثابتة لثبات نوع المادة ودرجة الحرارة.',
+                        'خطأ: الخلط بين المقاومة الكهربية R عند تغير الطول والمساحة معاً.'
+                    ],
+                    errorType: 'فهم المفهوم',
+                    remedialHint: 'تذكر دائماً أن المقاومة النوعية (ρe) والتوصيلية الكهربية (σ) خاصيتان فيزيائيتان مميزتان لنوع المادة عند ثبوت درجة الحرارة.'
+                },
+                {
+                    id: 'q2',
+                    text: 'في دائرة كهربائية بسيطة، إذا تضاعفت شدة التيار المار في مقاومة أومية ثابته، فإن القدرة المستهلكة في المقاومة:',
+                    options: ['تزداد للضعف', 'تزداد لأربعة أمثالها', 'تقل للنصف', 'تظل ثابتة'],
+                    correctIndex: 1,
+                    skillId: 'sk2',
+                    correctExplanation: 'القدرة المستهلكة تتناسب طردياً مع مربع شدة التيار عند ثبوت المقاومة (P = I² × R).',
+                    optionExplanations: [
+                        'خطأ: هذا افترض علاقة خطية P = I × R بدون تربيع التيار.',
+                        'صحيح: P = I² × R، فعند تضاعف I إلى 2I تصبح (2)² = 4 أضعاف.',
+                        'خطأ: تناسب عكسي غير صحيح.',
+                        'خطأ: القدرة تتغير بتغير شدة التيار.'
+                    ],
+                    errorType: 'اختيار القانون',
+                    remedialHint: 'راجع قوانين القدرة الكهربية P = VI = I²R = V²/R ولا تنسَ التربيع عند التغير في التيار.'
+                },
+                {
+                    id: 'q3',
+                    text: 'سلك مقاومته 8 أوم تم تشكيله على هيئة حلقة مغلقة، وتوصيل قطريها بمصدر جهده 4 فولت. احسب شدة التيار الكلي المقاس:',
+                    options: ['1 أمبير', '2 أمبير', '4 أمبير', '0.5 أمبير'],
+                    correctIndex: 1,
+                    skillId: 'sk3',
+                    correctExplanation: 'عند توصيل الحلقة من قطرها ينقسم السلك لنصفين متوازيين كل نصف 4 أوم. المقاومة المكافئة R_eq = 4/2 = 2 أوم. التيار I = V/R = 4/2 = 2 أمبير.',
+                    optionExplanations: [
+                        'خطأ: حساب على المقاومة الإجمالية 4 أوم دون توالي وتوازي.',
+                        'صحيح: R1=4Ω, R2=4Ω تووازي = 2Ω -> I = 4/2 = 2A.',
+                        'خطأ: خطأ في التعويض الرياضي.',
+                        'خطأ: القسمة المقلوبة للجهد على المقاومة.'
+                    ],
+                    errorType: 'التعويض',
+                    remedialHint: 'قسّم الحلقة لقسمين متوازيين واحسب المقاومة المكافئة أولاً قبل استخدام قانون أوم.'
+                },
+                {
+                    id: 'q4',
+                    text: 'أي الرسوم البيانية التالية يمثل العلاقة الصحيحة بين فرق الجهد V وشدة التيار I لموصل أومي عند ثبوت الحرارة؟',
+                    options: ['علاقة خطية طردية تمر بالنقطة (0,0)', 'علاقة عكسية منحنية', 'خط أفقي ثابت', 'علاقة جيبية متذبذبة'],
+                    correctIndex: 0,
+                    skillId: 'sk4',
+                    correctExplanation: 'قانون أوم ينص على V = I × R، والنسبة V/I ثابتة وهي R، فيمثل بيانيًا بخط مستقيم يمر بأصل الإحداثيات.',
+                    optionExplanations: [
+                        'صحيح: قانون أوم يعبر عن علاقة طردية خطية.',
+                        'خطأ: العلاقة ليست عكسية.',
+                        'خطأ: خط أفقي يعني ثبوت فرق الجهد بغض النظر عن التيار وهو غير صحيح لموصل أومي.',
+                        'خطأ: هذا يمثل التيار المتردد وليس الموصل الأومي المباشر.'
+                    ],
+                    errorType: 'تفسير ظاهرة/رسم بياني',
+                    remedialHint: 'ميل الخط المستقيم لمخطط V-I يمثل قيمة المقاومة الأومية الثابتة R.'
+                }
+            ],
+            exams: [
+                {
+                    id: 'ex1',
+                    title: 'اختبار التقييم التكيفي الأول - الكهربية وقانون أوم',
+                    durationMinutes: 30,
+                    totalQuestions: 4,
+                    skillsTargeted: ['sk1', 'sk2', 'sk3', 'sk4'],
+                    questions: ['q1', 'q2', 'q3', 'q4']
+                }
+            ],
+            attempts: [
+                {
+                    studentId: 'u2',
+                    examId: 'ex1',
+                    date: '2026-10-24',
+                    score: 75,
+                    skillMastery: {
+                        'sk1': 100,
+                        'sk2': 0,
+                        'sk3': 100,
+                        'sk4': 100
+                    },
+                    responses: [
+                        { qId: 'q1', chosen: 2, correct: true },
+                        { qId: 'q2', chosen: 0, correct: false, errorType: 'اختيار القانون' },
+                        { qId: 'q3', chosen: 1, correct: true },
+                        { qId: 'q4', chosen: 0, correct: true }
+                    ]
+                }
+            ],
+            remedialAssigned: [
+                {
+                    studentId: 'u2',
+                    skillId: 'sk2',
+                    status: 'pending', // pending, completed
+                    errorType: 'اختيار القانون',
+                    assignedDate: '2026-10-25'
+                }
+            ],
+            challenges: [
+                { id: 'ch1', title: 'لغز المقاومة المجهولة', points: 50, category: 'ألعاب الدوائر', description: 'تحدَّ نفسك في توصيل المقاومات للوصول للتيار المطلوب!' },
+                { id: 'ch2', title: 'سعة المكثفات والسحر الكهرومغناطيسي', points: 75, category: 'المكثفات', description: 'احسب شحنة المكثف في زمن قياسي.' }
+            ]
+        };
+
+        // DB Controller
+        function getDB() {
+            const data = localStorage.getItem(DB_KEY);
+            if (!data) {
+                localStorage.setItem(DB_KEY, JSON.stringify(initialDB));
+                return initialDB;
+            }
+            return JSON.parse(data);
+        }
+
+        function saveDB(db) {
+            localStorage.setItem(DB_KEY, JSON.stringify(db));
+        }
+
+        // Global State
+        let db = getDB();
+        let currentRole = 'student';
+        let activeExamState = null;
+
+        /**
+         * INITIAL RENDER & ROUTING logic
+         */
+        window.onload = function() {
+            updateHeaderStatus();
+            renderMainContent();
+        };
+
+        function updateHeaderStatus() {
+            const container = document.getElementById('header-user-status');
+            if (db.currentUser) {
+                const isTeacher = db.currentUser.role === 'teacher';
+                container.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="text-left hidden sm:block">
+                            <p class="text-xs font-bold text-white">${db.currentUser.name}</p>
+                            <p class="text-[10px] text-orange">${isTeacher ? 'معلم / مدير المادة' : 'طالب نادي الفيزياء'}</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-orange text-white flex items-center justify-center font-bold text-sm shadow">
+                            ${db.currentUser.name.charAt(0)}
+                        </div>
+                        <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 text-white text-xs transition-colors">
+                            <i class="fa-solid fa-power-off"></i>
+                        </button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button onclick="openLoginModal()" class="px-5 py-2.5 rounded-lg bg-orange hover:bg-orange-dark text-white font-semibold text-sm transition-all shadow-md flex items-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span>تسجيل الدخول</span>
+                    </button>
+                `;
+            }
+        }
+
+        function renderMainContent(tab = 'dashboard') {
+            const app = document.getElementById('app-container');
+            
+            if (!db.currentUser) {
+                app.innerHTML = renderLandingPage();
+                return;
+            }
+
+            if (db.currentUser.role === 'teacher') {
+                app.innerHTML = renderTeacherDashboard(tab);
+            } else {
+                app.innerHTML = renderStudentDashboard(tab);
+            }
+        }
+
+        /**
+         * LANDING PAGE (VISUAL & BRANDING)
+         */
+        function renderLandingPage() {
+            return `
+                <div class="space-y-12 py-6">
+                    <!-- Hero Section -->
+                    <div class="bg-gradient-to-br from-petroleum to-petroleum-dark text-white rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 border-b-4 border-orange">
+                        <div class="space-y-6 max-w-2xl z-10">
+                            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange/20 border border-orange/40 text-orange text-xs font-bold">
+                                <i class="fa-solid fa-microchip"></i>
+                                <span>نظام التقييم التكيفي الذكي الأول في الفيزياء</span>
+                            </div>
+                            <h1 class="text-3xl md:text-5xl font-extrabold leading-tight">
+                                لا تحصل فقط على درجة.. بل تفهم <span class="text-orange">لماذا أخطأت وكيف تتطور!</span>
+                            </h1>
+                            <p class="text-gray-200 text-sm md:text-base leading-relaxed">
+                                مرحباً بك في منصة <strong class="text-white">نادي الفيزياء | PHYSICS CLUB</strong> بإشراف أ. عمرو سمير. بيئة تعليمية تفاعلية تعتمد على التشخيص الفعلي للأخطاء وبناء مسارات علاجية مخصصة لكل طالب.
+                            </p>
+                            <div class="flex flex-wrap gap-4 pt-2">
+                                <button onclick="openLoginModal('student')" class="px-8 py-3.5 rounded-xl bg-orange hover:bg-orange-dark text-white font-bold text-base transition-all shadow-lg flex items-center gap-3 transform hover:-translate-y-0.5">
+                                    <i class="fa-solid fa-user-graduate text-lg"></i>
+                                    <span>دخول الطلاب</span>
+                                </button>
+                                <button onclick="openLoginModal('teacher')" class="px-8 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/30 font-bold text-base transition-all flex items-center gap-3">
+                                    <i class="fa-solid fa-chalkboard-user text-lg text-orange"></i>
+                                    <span>بوابة المدرس</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="relative z-10 flex justify-center">
+                            <div class="w-64 h-64 md:w-80 md:h-80 rounded-full bg-orange/10 border-2 border-orange/30 flex items-center justify-center relative physics-glow">
+                                <i class="fa-solid fa-atom text-9xl text-orange animate-pulse"></i>
+                                <div class="absolute top-4 right-4 bg-petroleum p-3 rounded-xl border border-orange text-xs font-bold shadow-lg">
+                                    <i class="fa-solid fa-bullseye text-orange ml-1"></i> تشخيص الدقة 100%
+                                </div>
+                                <div class="absolute bottom-4 left-4 bg-petroleum p-3 rounded-xl border border-orange text-xs font-bold shadow-lg">
+                                    <i class="fa-solid fa-chart-line text-orange ml-1"></i> مسار علاجي آلي
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Features Grid -->
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-petroleum/10 hover:shadow-md transition-shadow space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-petroleum-subtle text-petroleum flex items-center justify-center text-xl font-bold">
+                                <i class="fa-solid fa-brain"></i>
+                            </div>
+                            <h3 class="font-bold text-lg text-petroleum">محرك التقييم التكيفي</h3>
+                            <p class="text-xs text-gray-600 leading-relaxed">تتكيف الأسئلة في امتحاناتك التالية وفق استجابتك الحقيقية ونوع خطئك لضمان ترسيخ المفاهيم.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-petroleum/10 hover:shadow-md transition-shadow space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-orange-subtle text-orange flex items-center justify-center text-xl font-bold">
+                                <i class="fa-solid fa-kit-medical"></i>
+                            </div>
+                            <h3 class="font-bold text-lg text-petroleum">المسارات العلاجية</h3>
+                            <p class="text-xs text-gray-600 leading-relaxed">عند الوقوع في خطأ مفاهيمي أو حسابي، تقدم المنصة علاجاً فورياً وأمثلة شريحة لإعادة التقييم.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-petroleum/10 hover:shadow-md transition-shadow space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-petroleum-subtle text-petroleum flex items-center justify-center text-xl font-bold">
+                                <i class="fa-solid fa-file-signature"></i>
+                            </div>
+                            <h3 class="font-bold text-lg text-petroleum">تقارير ولي الأمر المعتمدة</h3>
+                            <p class="text-xs text-gray-600 leading-relaxed">إصدار تقارير شفافة وشاملة لمستوى الطالب بالمهارات ليتابع ولي الأمر التطور بوضوح.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * LOGIN & MODAL SYSTEM LOGIC
+         */
+        function openLoginModal(role = 'student') {
+            switchLoginRole(role);
+            const modal = document.getElementById('modal-backdrop');
+            const modalContent = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal-backdrop');
+            const modalContent = document.getElementById('modal-content');
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function switchLoginRole(role) {
+            currentRole = role;
+            document.getElementById('login-role').value = role;
+            const btnStudent = document.getElementById('role-btn-student');
+            const btnTeacher = document.getElementById('role-btn-teacher');
+            const label = document.getElementById('username-label');
+
+            if (role === 'student') {
+                btnStudent.className = "flex-1 py-2.5 rounded-lg text-sm font-bold transition-all text-white bg-petroleum shadow";
+                btnTeacher.className = "flex-1 py-2.5 rounded-lg text-sm font-bold transition-all text-gray-600 hover:text-petroleum";
+                label.innerText = 'اسم المستخدم أو كود الطالب';
+                document.getElementById('login-username').placeholder = 'std.ahmed';
+            } else {
+                btnTeacher.className = "flex-1 py-2.5 rounded-lg text-sm font-bold transition-all text-white bg-petroleum shadow";
+                btnStudent.className = "flex-1 py-2.5 rounded-lg text-sm font-bold transition-all text-gray-600 hover:text-petroleum";
+                label.innerText = 'اسم كود المدرس (مثل tch.amr)';
+                document.getElementById('login-username').placeholder = 'tch.amr';
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const role = document.getElementById('login-role').value;
+            const uInput = document.getElementById('login-username').value.trim();
+            const pInput = document.getElementById('login-password').value.trim();
+            const errDiv = document.getElementById('login-error');
+
+            // Server Side Check Logic Simulation
+            const found = db.users.find(u => u.username === uInput && u.pass === pInput && u.role === role);
+
+            if (found) {
+                errDiv.classList.add('hidden');
+                db.currentUser = found;
+                saveDB(db);
+                closeModal();
+                updateHeaderStatus();
+                renderMainContent();
+            } else {
+                errDiv.classList.remove('hidden');
+                document.getElementById('login-error-text').innerText = 'بيانات الحساب أو كلمة المرور غير صحيحة لمستوى الصلاحيات المحدد.';
+            }
+        }
+
+        function handleLogout() {
+            db.currentUser = null;
+            saveDB(db);
+            updateHeaderStatus();
+            renderMainContent();
+        }
+
+        /**
+         * STUDENT DASHBOARD SYSTEM
+         */
+        function renderStudentDashboard(tab = 'main') {
+            const student = db.currentUser;
+            const attempts = db.attempts.filter(a => a.studentId === student.id);
+            const pendingRemedials = db.remedialAssigned.filter(r => r.studentId === student.id && r.status === 'pending');
+
+            return `
+                <div class="space-y-6">
+                    <!-- Welcome Hero Header -->
+                    <div class="bg-gradient-to-r from-petroleum to-petroleum-light text-white p-6 md:p-8 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-center gap-4 border-r-8 border-orange">
+                        <div class="space-y-2 text-right w-full">
+                            <h2 class="text-2xl font-bold">أهلاً بك يا بطل الفيزياء: ${student.name} 👋</h2>
+                            <p class="text-xs md:text-sm text-gray-200">«الفيزياء هي التفكير المنطقي عميق الأثر» - مسار تعلمك مخصص 100% وفق مستواك الفعلي.</p>
+                            <div class="flex items-center gap-3 pt-2 text-xs">
+                                <span class="bg-white/20 px-3 py-1 rounded-full"><i class="fa-solid fa-users ml-1 text-orange"></i> ${student.group || 'مجموعة التفوق'}</span>
+                                <span class="bg-orange px-3 py-1 rounded-full text-white font-bold"><i class="fa-solid fa-star ml-1"></i> 350 نقطة تميز</span>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <button onclick="renderStudentDashboard('exams')" class="px-6 py-3 rounded-xl bg-orange hover:bg-orange-dark text-white font-bold text-sm shadow-md transition-all flex items-center gap-2">
+                                <i class="fa-solid fa-pen-ruler"></i>
+                                <span>بدء التقييم التكيفي الآن</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Tabs -->
+                    <div class="flex border-b border-gray-200 overflow-x-auto gap-2 text-sm font-bold">
+                        <button onclick="renderMainContent('main')" class="py-3 px-5 border-b-2 transition-all ${tab === 'main' ? 'border-orange text-orange' : 'border-transparent text-gray-500 hover:text-petroleum'}">
+                            <i class="fa-solid fa-house ml-2"></i>الرئيسية
+                        </button>
+                        <button onclick="renderMainContent('exams')" class="py-3 px-5 border-b-2 transition-all ${tab === 'exams' ? 'border-orange text-orange' : 'border-transparent text-gray-500 hover:text-petroleum'}">
+                            <i class="fa-solid fa-file-pen ml-2"></i>الامتحانات
+                        </button>
+                        <button onclick="renderMainContent('skills')" class="py-3 px-5 border-b-2 transition-all ${tab === 'skills' ? 'border-orange text-orange' : 'border-transparent text-gray-500 hover:text-petroleum'}">
+                            <i class="fa-solid fa-chart-pie ml-2"></i>متابعة المستوى والمهارات
+                        </button>
+                        <button onclick="renderMainContent('remedial')" class="py-3 px-5 border-b-2 transition-all relative ${tab === 'remedial' ? 'border-orange text-orange' : 'border-transparent text-gray-500 hover:text-petroleum'}">
+                            <i class="fa-solid fa-notes-medical ml-2"></i>المسارات العلاجية
+                            ${pendingRemedials.length > 0 ? `<span class="absolute top-2 left-1 w-2 h-2 rounded-full bg-orange"></span>` : ''}
+                        </button>
+                        <button onclick="renderMainContent('challenges')" class="py-3 px-5 border-b-2 transition-all ${tab === 'challenges' ? 'border-orange text-orange' : 'border-transparent text-gray-500 hover:text-petroleum'}">
+                            <i class="fa-solid fa-gamepad ml-2"></i>التحديات والألعاب
+                        </button>
+                    </div>
+
+                    <!-- Tab Dynamic Content -->
+                    <div id="student-tab-body">
+                        ${getStudentTabContent(tab, student, attempts, pendingRemedials)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function getStudentTabContent(tab, student, attempts, pendingRemedials) {
+            if (tab === 'main') {
+                return `
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <!-- Left Main Info -->
+                        <div class="md:col-span-2 space-y-6">
+                            <!-- Pending Remedial Alert -->
+                            ${pendingRemedials.length > 0 ? `
+                                <div class="bg-orange-subtle border border-orange/40 rounded-2xl p-5 flex items-center justify-between">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-xl bg-orange text-white flex items-center justify-center text-xl">
+                                            <i class="fa-solid fa-kit-medical"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-petroleum text-sm">تنبيه مسار علاجي مخصص!</h4>
+                                            <p class="text-xs text-gray-600">اكتشف النظام احتياجك لمراجعة مهارة: <strong>${db.skills.find(s=>s.id===pendingRemedials[0].skillId)?.name}</strong></p>
+                                        </div>
+                                    </div>
+                                    <button onclick="startRemedialSession('${pendingRemedials[0].skillId}')" class="px-4 py-2 bg-orange hover:bg-orange-dark text-white rounded-lg text-xs font-bold transition-all shadow">
+                                        بدء العلاج الفوري
+                                    </button>
+                                </div>
+                            ` : ''}
+
+                            <!-- Available Exams Widget -->
+                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-petroleum/10 space-y-4">
+                                <h3 class="font-bold text-lg text-petroleum border-b pb-3 flex items-center justify-between">
+                                    <span><i class="fa-solid fa-clipboard-list text-orange ml-2"></i>الامتحانات والتقييمات المتاحة</span>
+                                    <span class="text-xs text-gray-500 font-normal">تحديث آلي</span>
+                                </h3>
+                                <div class="space-y-3">
+                                    ${db.exams.map(ex => `
+                                        <div class="flex items-center justify-between p-4 rounded-xl bg-petroleum-subtle border border-petroleum/10">
+                                            <div>
+                                                <h4 class="font-bold text-sm text-petroleum">${ex.title}</h4>
+                                                <p class="text-xs text-gray-500 mt-1"><i class="fa-regular fa-clock ml-1"></i>الزمن: ${ex.durationMinutes} دقيقة | الأسئلة: ${ex.totalQuestions} أسئلة تكيفية</p>
+                                            </div>
+                                            <button onclick="startAdaptiveExam('${ex.id}')" class="px-5 py-2 rounded-lg bg-petroleum hover:bg-petroleum-dark text-white font-bold text-xs transition-all shadow">
+                                                بدء الامتحان
+                                            </button>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Summary Sidebar -->
+                        <div class="space-y-6">
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-petroleum/10 space-y-4">
+                                <h3 class="font-bold text-petroleum border-b pb-2"><i class="fa-solid fa-chart-line text-orange ml-2"></i>ملخص إتقان المهارات</h3>
+                                <div class="space-y-3">
+                                    ${db.skills.map(sk => {
+                                        const lastAttempt = attempts[attempts.length - 1];
+                                        const mastery = lastAttempt?.skillMastery[sk.id] ?? 80;
+                                        return `
+                                            <div>
+                                                <div class="flex justify-between text-xs font-bold mb-1">
+                                                    <span class="text-gray-700">${sk.name}</span>
+                                                    <span class="text-petroleum">${mastery}%</span>
+                                                </div>
+                                                <div class="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
+                                                    <div class="h-full bg-orange transition-all" style="width: ${mastery}%"></div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (tab === 'exams') {
+                return `
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-petroleum/10 space-y-6">
+                        <h3 class="font-bold text-xl text-petroleum border-b pb-4">الامتحانات والتقييمات التكيفية</h3>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            ${db.exams.map(ex => `
+                                <div class="p-5 border rounded-2xl border-petroleum/20 bg-petroleum-subtle/40 space-y-4">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-bold text-petroleum text-base">${ex.title}</h4>
+                                            <span class="inline-block mt-1 px-2.5 py-0.5 rounded-md bg-orange/20 text-orange text-[11px] font-bold">تقييم تكيفي ذكي</span>
+                                        </div>
+                                        <i class="fa-solid fa-atom text-2xl text-petroleum/40"></i>
+                                    </div>
+                                    <p class="text-xs text-gray-600">يتم تحديد صعوبة ونوع الأسئلة لاحقاً تلقائياً وفق أدائك دون إظهار صعوبة السؤال لك.</p>
+                                    <div class="pt-2 flex justify-between items-center border-t border-gray-200">
+                                        <span class="text-xs text-gray-500 font-bold"><i class="fa-solid fa-stopwatch ml-1"></i>${ex.durationMinutes} دقيقة</span>
+                                        <button onclick="startAdaptiveExam('${ex.id}')" class="px-5 py-2 bg-orange hover:bg-orange-dark text-white rounded-lg font-bold text-xs transition-all shadow">
+                                            ابدأ التقييم
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (tab === 'skills') {
+                return `
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-petroleum/10 space-y-6">
+                        <h3 class="font-bold text-xl text-petroleum border-b pb-4">تشخيص إتقان المهارات التراكمي</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            ${db.skills.map(sk => `
+                                <div class="p-5 rounded-xl border border-petroleum/10 space-y-3 bg-white">
+                                    <div class="flex justify-between items-center">
+                                        <h4 class="font-bold text-petroleum text-sm">${sk.name}</h4>
+                                        <span class="text-xs font-bold px-2 py-1 rounded bg-petroleum-subtle text-petroleum">مستوى الإتقان: 85%</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500">${sk.desc}</p>
+                                    <div class="w-full h-3 rounded-full bg-gray-100 overflow-hidden">
+                                        <div class="h-full bg-orange" style="width: 85%"></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (tab === 'remedial') {
+                return `
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-petroleum/10 space-y-6">
+                        <h3 class="font-bold text-xl text-petroleum border-b pb-4">جلسات العلاج والتقوية التعليمية</h3>
+                        ${pendingRemedials.length === 0 ? `
+                            <div class="text-center py-12 text-gray-500 space-y-2">
+                                <i class="fa-solid fa-circle-check text-4xl text-green-500"></i>
+                                <p class="font-bold text-sm">ممتاز! لا يوجد لديك أي مسارات علاجية معلقة حالياً.</p>
+                            </div>
+                        ` : `
+                            <div class="space-y-4">
+                                ${pendingRemedials.map(r => {
+                                    const sk = db.skills.find(s=>s.id === r.skillId);
+                                    return `
+                                        <div class="p-5 border border-orange/30 rounded-2xl bg-orange-subtle flex justify-between items-center">
+                                            <div>
+                                                <h4 class="font-bold text-petroleum text-base">مسار علاج: ${sk?.name}</h4>
+                                                <p class="text-xs text-gray-600 mt-1">السبب المشخص: خطأ في (${r.errorType})</p>
+                                            </div>
+                                            <button onclick="startRemedialSession('${r.skillId}')" class="px-5 py-2.5 bg-orange text-white font-bold rounded-xl text-xs shadow hover:bg-orange-dark">
+                                                بدء الجلسة العلاجية
+                                            </button>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `}
+                    </div>
+                `;
+            }
+
+            if (tab === 'challenges') {
+                return `
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-petroleum/10 space-y-6">
+                        <h3 class="font-bold text-xl text-petroleum border-b pb-4"><i class="fa-solid fa-gamepad text-orange ml-2"></i>تحديات وألعاب الفيزياء التفاعلية</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            ${db.challenges.map(ch => `
+                                <div class="p-6 rounded-2xl border border-petroleum/10 bg-petroleum-subtle/30 space-y-4 flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-xs font-bold text-orange">${ch.category}</span>
+                                            <span class="text-xs bg-orange text-white px-2 py-0.5 rounded-full font-bold">+${ch.points} نقطة</span>
+                                        </div>
+                                        <h4 class="font-bold text-lg text-petroleum">${ch.title}</h4>
+                                        <p class="text-xs text-gray-600 mt-2">${ch.description}</p>
+                                    </div>
+                                    <button onclick="alert('تم بدء التحدي! استعد لحل ألغاز قانون أوم')" class="w-full py-2.5 rounded-xl bg-petroleum hover:bg-petroleum-dark text-white font-bold text-xs transition-all shadow">
+                                        بدء اللغز الفيزيائي
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        /**
+         * ADAPTIVE EXAM ENGINE & RENDERING
+         */
+        function startAdaptiveExam(examId) {
+            const exam = db.exams.find(e => e.id === examId);
+            if (!exam) return;
+
+            // Load Exam Questions
+            const examQuestions = db.questionBank.filter(q => exam.questions.includes(q.id));
+            
+            activeExamState = {
+                examId: exam.id,
+                questions: examQuestions,
+                currentIndex: 0,
+                responses: [] // { qId, chosenOptionIndex }
+            };
+
+            renderExamQuestion();
+        }
+
+        function renderExamQuestion() {
+            const app = document.getElementById('app-container');
+            const state = activeExamState;
+            const q = state.questions[state.currentIndex];
+
+            app.innerHTML = `
+                <div class="max-w-3xl mx-auto space-y-6">
+                    <!-- Progress Bar -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-petroleum/10 flex items-center justify-between text-xs font-bold text-petroleum">
+                        <span>سؤال ${state.currentIndex + 1} من ${state.questions.length}</span>
+                        <div class="w-1/2 h-2 rounded-full bg-gray-100 overflow-hidden">
+                            <div class="h-full bg-orange transition-all" style="width: ${((state.currentIndex + 1) / state.questions.length) * 100}%"></div>
+                        </div>
+                        <span class="text-orange"><i class="fa-solid fa-user-shield ml-1"></i>الصعوبة مخفية لتجربة تكيفية عادلة</span>
+                    </div>
+
+                    <!-- Question Card -->
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-md border border-petroleum/10 space-y-6">
+                        <h3 class="text-lg font-bold text-petroleum leading-relaxed">${q.text}</h3>
+
+                        <!-- Options -->
+                        <div class="space-y-3" id="options-container">
+                            ${q.options.map((opt, idx) => `
+                                <label onclick="selectExamOption(${idx})" class="option-label flex items-center p-4 rounded-xl border-2 border-gray-200 hover:border-petroleum cursor-pointer transition-all gap-4">
+                                    <input type="radio" name="question-opt" value="${idx}" class="w-4 h-4 text-orange focus:ring-orange">
+                                    <span class="text-sm font-semibold text-gray-800">${opt}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+
+                        <!-- Action Controls -->
+                        <div class="pt-4 flex justify-end border-t border-gray-100">
+                            <button id="next-q-btn" onclick="submitExamAnswer()" disabled class="px-8 py-3 bg-gray-300 text-gray-500 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
+                                <span>${state.currentIndex + 1 === state.questions.length ? 'إنهاء الامتحان وتوليد التشخيص' : 'السؤال التالي'}</span>
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectExamOption(idx) {
+            const labels = document.querySelectorAll('.option-label');
+            labels.forEach((lbl, i) => {
+                if (i === idx) {
+                    lbl.classList.add('border-orange', 'bg-orange-subtle');
+                } else {
+                    lbl.classList.remove('border-orange', 'bg-orange-subtle');
+                }
+            });
+
+            const nextBtn = document.getElementById('next-q-btn');
+            nextBtn.disabled = false;
+            nextBtn.className = "px-8 py-3 bg-orange hover:bg-orange-dark text-white rounded-xl font-bold text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer";
+        }
+
+        function submitExamAnswer() {
+            const selected = document.querySelector('input[name="question-opt"]:checked');
+            if (!selected) return;
+
+            const chosenIdx = parseInt(selected.value);
+            const state = activeExamState;
+            const currentQ = state.questions[state.currentIndex];
+
+            state.responses.push({
+                qId: currentQ.id,
+                chosen: chosenIdx,
+                correct: chosenIdx === currentQ.correctIndex,
+                skillId: currentQ.skillId,
+                errorType: currentQ.errorType
+            });
+
+            if (state.currentIndex + 1 < state.questions.length) {
+                state.currentIndex++;
+                renderExamQuestion();
+            } else {
+                finishExamAndDiagnose();
+            }
+        }
+
+        function finishExamAndDiagnose() {
+            const state = activeExamState;
+            let totalCorrect = 0;
+            const skillScores = {};
+
+            state.responses.forEach(r => {
+                if (r.correct) totalCorrect++;
+                
+                // Adaptive Diagnosis Logic
+                if (!r.correct) {
+                    // Assign remedial automatically if student made error
+                    db.remedialAssigned.push({
+                        studentId: db.currentUser.id,
+                        skillId: r.skillId,
+                        status: 'pending',
+                        errorType: r.errorType,
+                        assignedDate: new Date().toISOString().split('T')[0]
+                    });
+                }
+            });
+
+            const finalScore = Math.round((totalCorrect / state.questions.length) * 100);
+
+            // Save Attempt
+            db.attempts.push({
+                studentId: db.currentUser.id,
+                examId: state.examId,
+                date: new Date().toISOString().split('T')[0],
+                score: finalScore,
+                responses: state.responses
+            });
+            saveDB(db);
+
+            renderExamFeedbackView(finalScore, state.responses);
+        }
+
+        function renderExamFeedbackView(score, responses) {
+            const app = document.getElementById('app-container');
+
+            app.innerHTML = `
+                <div class="max-w-3xl mx-auto space-y-6">
+                    <div class="bg-white p-8 rounded-2xl shadow-md border border-petroleum/10 space-y-6 text-center">
+                        <div class="w-20 h-20 rounded-full bg-orange/10 text-orange flex items-center justify-center text-3xl font-bold mx-auto">
+                            ${score}%
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-petroleum">تم إنهاء الامتحان بنجاح!</h2>
+                            <p class="text-xs text-gray-500 mt-1">تقرير الشرح التعليمي وتفسير الإجابات الفوري:</p>
+                        </div>
+
+                        <!-- Feedback Breakdown -->
+                        <div class="space-y-4 text-right">
+                            ${responses.map((resp, i) => {
+                                const q = db.questionBank.find(item => item.id === resp.qId);
+                                return `
+                                    <div class="p-5 rounded-xl border ${resp.correct ? 'border-green-200 bg-green-50/40' : 'border-red-200 bg-red-50/40'} space-y-3">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fa-solid ${resp.correct ? 'fa-circle-check text-green-600' : 'fa-circle-xmark text-red-600'} text-lg"></i>
+                                            <h4 class="font-bold text-sm text-petroleum">سؤال ${i+1}: ${q.text}</h4>
+                                        </div>
+                                        
+                                        <div class="text-xs space-y-2 pr-6">
+                                            <p class="font-semibold ${resp.correct ? 'text-green-700' : 'text-red-700'}">
+                                                إجابتك: ${q.options[resp.chosen]} ${resp.correct ? '(صحيحة)' : '(خاطئة)'}
+                                            </p>
+                                            
+                                            <!-- Educational Explanation -->
+                                            <div class="bg-white p-3 rounded-lg border text-gray-700">
+                                                <strong class="text-petroleum block mb-1"><i class="fa-solid fa-lightbulb text-orange ml-1"></i>الشرح والتفسير الفيزيائي:</strong>
+                                                <p>${q.correctExplanation}</p>
+                                            </div>
+
+                                            ${!resp.correct ? `
+                                                <div class="bg-orange-subtle p-3 rounded-lg border border-orange/30 text-petroleum">
+                                                    <strong class="text-orange block mb-1"><i class="fa-solid fa-stethoscope ml-1"></i>التشخيص التعليمي للخطأ:</strong>
+                                                    <p>نوع الخطأ المشخص: <strong>${q.errorType}</strong> - ${q.optionExplanations[resp.chosen]}</p>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+
+                        <button onclick="renderMainContent('main')" class="px-8 py-3 bg-petroleum hover:bg-petroleum-dark text-white font-bold text-sm rounded-xl shadow">
+                            العودة للوحة الرئيسية
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * REMEDIAL SYSTEM SESSION
+         */
+        function startRemedialSession(skillId) {
+            const skill = db.skills.find(s => s.id === skillId);
+            const modal = document.getElementById('remedial-modal');
+            const content = document.getElementById('remedial-content');
+
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b pb-4">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-notes-medical text-orange text-2xl"></i>
+                            <h3 class="font-bold text-lg text-petroleum">جلسة علاج تعليمي مخصص</h3>
+                        </div>
+                        <button onclick="closeRemedialModal()" class="text-gray-400 hover:text-orange text-xl"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="p-4 bg-petroleum-subtle rounded-xl border border-petroleum/10">
+                            <h4 class="font-bold text-sm text-petroleum">المهارة المستهدفة للعلاج: ${skill?.name}</h4>
+                            <p class="text-xs text-gray-600 mt-1">${skill?.desc}</p>
+                        </div>
+
+                        <div class="space-y-2 text-xs">
+                            <h5 class="font-bold text-petroleum">1. الشرح المبسط لإزالة اللبس المفاهيمي:</h5>
+                            <p class="bg-gray-50 p-3 rounded-lg border text-gray-700 leading-relaxed">
+                                عند اختيار القوانين أو التعويض، تأكد من التفريق بين الكميات الفيزيائية المطلوبة والمعطاة، وحدد العلاقة الخطية أو التربيعية قبل البدء في الحساب.
+                            </p>
+                        </div>
+
+                        <div class="space-y-2 text-xs">
+                            <h5 class="font-bold text-petroleum">2. مثال محلول خطوة بخطوة:</h5>
+                            <div class="bg-orange-subtle p-3 rounded-lg border border-orange/20 space-y-1">
+                                <p class="font-bold text-orange">المسألة: موصل زادت شدة تيار ضعفين، فما تضاعف القدرة؟</p>
+                                <p class="text-gray-700">الحل: P = I²R -> عند التعويض بـ 2I تصبح (2)² = 4 أضعاف القدرة.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex justify-end gap-3 border-t">
+                        <button onclick="completeRemedial('${skillId}')" class="px-6 py-2.5 bg-orange text-white rounded-xl font-bold text-xs shadow hover:bg-orange-dark">
+                            إتمام الجلسة وإعادة التقييم
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeRemedialModal() {
+            document.getElementById('remedial-modal').classList.add('hidden');
+        }
+
+        function completeRemedial(skillId) {
+            db.remedialAssigned = db.remedialAssigned.filter(r => !(r.studentId === db.currentUser.id && r.skillId === skillId));
+            saveDB(db);
+            closeRemedialModal();
+            renderMainContent('main');
+        }
+
+        /**
+         * TEACHER DASHBOARD SYSTEM
+         */
+        function renderTeacherDashboard(tab = 'dashboard') {
+            const teacher = db.currentUser;
+            const students = db.users.filter(u => u.role === 'student');
+
+            return `
+                <div class="space-y-6">
+                    <!-- Teacher Header Bar -->
+                    <div class="bg-petroleum text-white p-6 rounded-2xl shadow-lg flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-bold">لوحة تحكم المعلم | ${teacher.name}</h2>
+                            <p class="text-xs text-orange mt-1">مباشر - إدارة البنك، الطلاب، والتقارير المعتمدة</p>
+                        </div>
+                        <button onclick="openQuestionBankModal()" class="px-4 py-2.5 bg-orange hover:bg-orange-dark text-white rounded-xl font-bold text-xs shadow flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i>إضافة سؤال لبنك الأسئلة
+                        </button>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="flex border-b border-gray-200 gap-2 text-sm font-bold">
+                        <button onclick="renderMainContent('dashboard')" class="py-3 px-5 border-b-2 transition-all ${tab === 'dashboard' ? 'border-orange text-orange' : 'border-transparent text-gray-500'}">
+                            <i class="fa-solid fa-chart-line ml-2"></i>الإحصائيات والطلاب
+                        </button>
+                        <button onclick="renderMainContent('bank')" class="py-3 px-5 border-b-2 transition-all ${tab === 'bank' ? 'border-orange text-orange' : 'border-transparent text-gray-500'}">
+                            <i class="fa-solid fa-database ml-2"></i>بنك الأسئلة (${db.questionBank.length})
+                        </button>
+                    </div>
+
+                    <div id="teacher-tab-body">
+                        ${getTeacherTabContent(tab, students)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function getTeacherTabContent(tab, students) {
+            if (tab === 'dashboard') {
+                return `
+                    <div class="space-y-6">
+                        <!-- Stats Grid -->
+                        <div class="grid md:grid-cols-4 gap-4">
+                            <div class="bg-white p-5 rounded-xl border border-petroleum/10 shadow-sm">
+                                <p class="text-xs text-gray-500 font-bold">إجمالي الطلاب</p>
+                                <h3 class="text-2xl font-bold text-petroleum mt-1">${students.length}</h3>
+                            </div>
+                            <div class="bg-white p-5 rounded-xl border border-petroleum/10 shadow-sm">
+                                <p class="text-xs text-gray-500 font-bold">الأسئلة بالبنك</p>
+                                <h3 class="text-2xl font-bold text-orange mt-1">${db.questionBank.length}</h3>
+                            </div>
+                            <div class="bg-white p-5 rounded-xl border border-petroleum/10 shadow-sm">
+                                <p class="text-xs text-gray-500 font-bold">الامتحانات النفعية</p>
+                                <h3 class="text-2xl font-bold text-petroleum mt-1">${db.exams.length}</h3>
+                            </div>
+                            <div class="bg-white p-5 rounded-xl border border-petroleum/10 shadow-sm">
+                                <p class="text-xs text-gray-500 font-bold">المسارات العلاجية النشطة</p>
+                                <h3 class="text-2xl font-bold text-orange mt-1">${db.remedialAssigned.length}</h3>
+                            </div>
+                        </div>
+
+                        <!-- Students Table -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-petroleum/10 p-6 space-y-4">
+                            <h3 class="font-bold text-lg text-petroleum border-b pb-3">إدارة الطلاب والتقارير المعتمدة</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-right text-xs">
+                                    <thead class="bg-petroleum-subtle text-petroleum font-bold">
+                                        <tr>
+                                            <th class="p-3">اسم الطالب</th>
+                                            <th class="p-3">المجموعة</th>
+                                            <th class="p-3">آخر تقييم</th>
+                                            <th class="p-3">الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y">
+                                        ${students.map(s => `
+                                            <tr>
+                                                <td class="p-3 font-bold text-gray-800">${s.name}</td>
+                                                <td class="p-3 text-gray-600">${s.group || 'عام'}</td>
+                                                <td class="p-3 text-orange font-bold">75% (مستقر)</td>
+                                                <td class="p-3">
+                                                    <button onclick="generateParentReport('${s.id}')" class="px-3 py-1.5 bg-petroleum text-white rounded-lg text-[11px] font-bold hover:bg-petroleum-dark">
+                                                        توليد تقرير ولي الأمر
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (tab === 'bank') {
+                return `
+                    <div class="bg-white rounded-2xl shadow-sm border border-petroleum/10 p-6 space-y-4">
+                        <h3 class="font-bold text-lg text-petroleum border-b pb-3">بنك الأسئلة والشروح التكيفية</h3>
+                        <div class="space-y-4">
+                            ${db.questionBank.map((q, idx) => `
+                                <div class="p-5 border rounded-xl border-gray-200 bg-gray-50 space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-xs font-bold text-orange">سؤال ${idx+1} - نوع الخطأ: ${q.errorType}</span>
+                                        <span class="text-xs text-gray-500 font-bold">المهارة: ${db.skills.find(s=>s.id===q.skillId)?.name}</span>
+                                    </div>
+                                    <h4 class="font-bold text-sm text-petroleum">${q.text}</h4>
+                                    <p class="text-xs text-green-700 font-semibold">الإجابة الصحيحة: ${q.options[q.correctIndex]}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        /**
+         * PARENT REPORT GENERATOR
+         */
+        function generateParentReport(studentId) {
+            const student = db.users.find(u => u.id === studentId);
+            const modal = document.getElementById('parent-report-modal');
+            const content = document.getElementById('parent-report-content');
+
+            content.innerHTML = `
+                <div class="space-y-6 text-right">
+                    <div class="p-4 bg-petroleum-subtle rounded-xl border border-petroleum/20 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-lg text-petroleum">الطالب: ${student.name}</h3>
+                            <p class="text-xs text-gray-600">الصف الدراسي: الثالث الثانوي | بإشراف أ. عمرو سمير</p>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full font-bold text-xs">اعتماد المعلم المباشر</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h4 class="font-bold text-sm text-petroleum">1. تقييم إتقان المهارات الفيزيائية الرئيسي:</h4>
+                        <div class="grid grid-cols-2 gap-3">
+                            ${db.skills.map(sk => `
+                                <div class="p-3 border rounded-lg bg-gray-50">
+                                    <p class="text-xs font-bold text-gray-700">${sk.name}</p>
+                                    <p class="text-sm font-extrabold text-orange mt-1">85% (متقدم)</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h4 class="font-bold text-sm text-petroleum">2. توصية المعلم الموجهة لولي الأمر:</h4>
+                        <p class="text-xs text-gray-700 bg-orange-subtle p-3 rounded-lg border border-orange/20 leading-relaxed">
+                            يقدم الطالب أداءً ممتازاً في الحسابات الرياضية وقانون أوم، ويحتاج فقط إلى استمرار المتابعة في التعويض المباشر وتفسير الظواهر البيانية.
+                        </p>
+                    </div>
+
+                    <div class="pt-4 flex justify-end">
+                        <button onclick="window.print()" class="px-6 py-2 bg-petroleum text-white font-bold rounded-xl text-xs shadow">
+                            طباعة التقرير المعتمد
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeParentReport() {
+            document.getElementById('parent-report-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
